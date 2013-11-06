@@ -13,10 +13,9 @@ import javax.xml.ws.Endpoint;
  */
 public class Maze {
 	public static final Point START_POINT = new Point(0, 0);
-	public static final Point END_POINT = null;
+	
 	
 	public static char[][] create(int width, int height) {
-		
 
 		return null;
 	}
@@ -36,7 +35,7 @@ public class Maze {
 	}
 
 	
-	class Wall{
+	private static class Wall{
 		
 		char sign;
 		boolean isDestructable;
@@ -50,12 +49,13 @@ public class Maze {
 		
 	}
 
-	class Cell{
+	private static class Cell{
 		
 		char sign;
 		Point position;
 		boolean isStart;
 		boolean isEnd;
+		int parent; //the parent in the disjointSet 
 		
 		Cell(Point position, boolean isStart, boolean isEnd){
 			this.position = position;
@@ -63,16 +63,17 @@ public class Maze {
 				this.isEnd = false;
 				this.isStart = true;
 				this.sign = 's';
-			}else if(this.position.equals(END_POINT)){
-				this.isEnd = true;
-				this.isStart = false;
-				this.sign = 'e';
 			}else{
 				this.isEnd = false;
 				this.isStart = false;
 				this.sign = ' ';
 			}
 		}
+	}
+	
+	private static class DisjointSet{
+		
+		
 	}
 	
 }
