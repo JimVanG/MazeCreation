@@ -13,49 +13,13 @@ import javax.xml.ws.Endpoint;
  * 
  */
 public class Maze {
+	public enum Cell_Type {
+		NORTH_WEST, WEST, SOUTH_WEST, SOUTH, SOUTH_EAST, EAST, NORTH_EAST, NORTH, CENTER
+	}
+
 	public static final Point START_POINT = new Point(0, 0);
 
 	public static char[][] create(int width, int height) {
-
-		int numberOfHorizontalWalls = width * 2;
-		int numberOfVerticalWalls = height * 2;
-
-		Wall[][] theWalls = new Wall[numberOfHorizontalWalls][numberOfVerticalWalls];
-		Cell[][] theCells = new Cell[width][height];
-
-		int cellX = -1;
-		for (int x = 0; x < numberOfHorizontalWalls; x++) {
-			++cellX;
-			int cellY = 0;
-			for (int y = 0; y < numberOfVerticalWalls; y++) {
-				if (x == 0 || y == 0 || x == numberOfHorizontalWalls
-						|| y == numberOfVerticalWalls) {
-					theWalls[x][y] = new Wall(false, new Point(x, y));
-				} else if (x % 2 == 0 && y % 2 == 0) {
-					theWalls[x][y] = new Wall(false, new Point(x, y));
-				} else if(x % 2 == 1) {
-					theWalls[x][y] = new Wall(true, new Point(x, y));
-				}
-				if (x % 2 == 1 && y % 2 == 1) {
-					
-					if (x == 0 && y == 0) {
-						theCells[cellX][cellY++] = new Cell(new Point(cellX, cellY), true, false);
-					} else if (x == width - 1 && y == height - 1) {
-						theCells[cellX][cellY++] = new Cell(new Point(cellX, cellY), false, true);
-					} else {
-						theCells[cellX][cellY++] = new Cell(new Point(cellX, cellY), false, false);
-					}
-				}
-			}
-			//++cellX;
-		} // closes outer for-loop
-		
-		for(int x = 0; x < numberOfHorizontalWalls; x++){
-			for(int y = 0; y < numberOfVerticalWalls; y++){
-				System.out.print(theWalls[x][y].sign);
-				System.out.print(theCells[x][y].sign);
-			}
-		}
 
 		return null;
 	}
@@ -67,7 +31,6 @@ public class Maze {
 	public static double hoursSpent() {
 		return 5;
 	}
-
 
 	private static class Wall {
 
@@ -88,24 +51,59 @@ public class Maze {
 
 	}
 
+	private static class CellWalls {
+		Wall north, south, east, west;
+
+		CellWalls(Cell_Type type) {
+			switch (type) {
+			case NORTH_WEST:
+
+				break;
+			case WEST:
+
+				break;
+			case SOUTH_WEST:
+
+				break;
+			case SOUTH:
+
+				break;
+			case SOUTH_EAST:
+
+				break;
+			case EAST:
+
+				break;
+			case NORTH_EAST:
+
+				break;
+			case NORTH:
+
+				break;
+			case CENTER:
+
+				break;
+			default:
+
+				break;
+			}
+		}
+	}
+
 	private static class Cell {
 
 		char sign;
 		Point position;
-		boolean isStart;
-		boolean isEnd;
+		boolean isStart = false;
+		boolean isEnd = false;
 		int parent; // the parent in the disjointSet
 
-		Cell(Point position, boolean isStart, boolean isEnd) {
+		Cell(Point position) {
 			this.position = position;
-			this.isStart = isStart;
-			this.isEnd = isEnd;
-			if (this.isStart) {
+			if (this.position == START_POINT) {
+				this.isStart = true;
 				this.sign = 's';
-			} else if (this.isEnd) {
-				this.sign = 'e';
-			} else {
-				this.sign = ' ';
+
 			}
 		}
 
@@ -119,7 +117,6 @@ public class Maze {
 
 	}
 
-	
 	public static void main(String[] args) {
 		Maze.create(6, 3);
 	}
