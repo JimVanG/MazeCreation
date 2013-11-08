@@ -25,6 +25,7 @@ public class Maze {
 
 		Cell[][] theCells = new Cell[horizontalLength][verticalLength];
 		char[][] theMaze = new char[horizontalLength][verticalLength];
+		Cell[] cellList = new Cell[width * height];
 
 		int cellX = -1;
 		for (int x = 0; x < horizontalLength; x++) {
@@ -33,12 +34,10 @@ public class Maze {
 			}
 			int cellY = 0;
 			for (int y = 0; y < verticalLength; y++) {
-
 				// gets the outer walls of the maze
 				if (x == 0 || x == horizontalLength - 1 || y == 0
 						|| y == verticalLength - 1) {
 					theMaze[x][y] = '#';
-					// System.out.println(theMaze[x][x]);
 				} else if (x % 2 == 1 && y % 2 == 0) {
 					theMaze[x][y] = '#';
 				} else if (x % 2 == 0) {
@@ -52,14 +51,15 @@ public class Maze {
 			}
 			// System.out.println();
 		}
-
+		int numberOfCells = 0;
 		for (int x = 0; x < verticalLength; x++) {
-
+			
 			for (int y = 0; y < horizontalLength; y++) {
 				System.out.print(theMaze[y][x]);
 				//System.out.print(theCells[x][y].sign);
 				if (x % 2 == 1 && y % 2 == 1){
 					System.out.print(theCells[y][x].sign);
+					cellList[numberOfCells++] = theCells[y][x];
 				}
 			}
 
@@ -103,38 +103,58 @@ public class Maze {
 			case NORTH_WEST:
 				east = new Wall(true);
 				south = new Wall(true);
+				
+				north = new Wall(false);
+				west = new Wall(false);
 				break;
 			case WEST:
 				east = new Wall(true);
 				south = new Wall(true);
 				north = new Wall(true);
+				
+				west = new Wall(false);
 				break;
 			case SOUTH_WEST:
 				east = new Wall(true);
 				north = new Wall(true);
+				
+				south = new Wall(false);
+				west = new Wall(false);
 				break;
 			case SOUTH:
 				west = new Wall(true);
 				east = new Wall(true);
 				south = new Wall(true);
+				
+				south = new Wall(false);
 				break;
 			case SOUTH_EAST:
 				north = new Wall(true);
 				west = new Wall(true);
+				
+				south = new Wall(false);
+				east = new Wall(false);
 				break;
 			case EAST:
 				north = new Wall(true);
 				south = new Wall(true);
 				west = new Wall(true);
+
+				east = new Wall(false);
 				break;
 			case NORTH_EAST:
 				west = new Wall(true);
 				south = new Wall(true);
+				
+				north = new Wall(false);
+				east = new Wall(false);
 				break;
 			case NORTH:
 				west = new Wall(true);
 				east = new Wall(true);
 				south = new Wall(true);
+				
+				north = new Wall(false);
 				break;
 			case CENTER:
 				east = new Wall(true);
