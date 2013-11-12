@@ -31,10 +31,10 @@ public class Maze {
 		if (width == 1 || height == 1) {//if there was an input of width or height equal to one.
 			char weirdMaze[][] = null;
 			if(width == 1 && height != 1){
-				weirdMaze = new char[3][verticalLength];
-				for(int x = 0; x < 3; x++){
-					for(int y = 0; y < verticalLength; y++){
-						if(x == 0 || y == 0 || x == (2) || y == (verticalLength - 1)){
+				weirdMaze = new char[verticalLength][3];
+				for(int x = 0; x < verticalLength; x++){
+					for(int y = 0; y < 3; y++){
+						if(x == 0 || y == 0 || y == (2) || x == (verticalLength - 1)){
 							weirdMaze[x][y] = '#';
 						}else if(x % 2 == 0 && y % 2 == 1){
 							weirdMaze[x][y] = ' ';
@@ -51,23 +51,29 @@ public class Maze {
 				}
 						
 			}else if(width != 1 && height == 1){
-				weirdMaze = new char[horizontalLength][3];
-				for(int x = 0; x < horizontalLength; x++){
-					for(int y = 0; y < 3; y++){
-						if(x == 0 || y == 0 || x == (horizontalLength - 1) || y == (2)){
+				weirdMaze = new char[3][horizontalLength];
+				for(int x = 0; x < 3; x++){
+					for(int y = 0; y < horizontalLength; y++){
+						if(x == 0 || y == 0 || y == (horizontalLength - 1) || x == (2)){
 							weirdMaze[x][y] = '#';
-						}else if(x % 2 == 0 && y % 2 == 1){
-							weirdMaze[x][y] = '#';
+							System.out.print(weirdMaze[x][y]);
+						}else if(x % 2 == 1 && y % 2 == 0){
+							weirdMaze[x][y] = ' ';
+							System.out.print(weirdMaze[x][y]);
 						}else if(x % 2 == 1 && y % 2 == 1){
 							if(x == 1 && y == 1){
 								weirdMaze[x][y] = 's';
-							}else if(x == horizontalLength - 2 && y == 1){
+								System.out.print(weirdMaze[x][y]);
+							}else if(y == horizontalLength - 2 && x == 1){
 								weirdMaze[x][y] = 'e';
-							}else{
+								System.out.print(weirdMaze[x][y]);
+							}else if(x == 1){
 								weirdMaze[x][y] = ' ';
+								System.out.print(weirdMaze[x][y]);
 							}
 						}
 					}
+					System.out.println();
 				}
 			}
 			return weirdMaze;
@@ -251,14 +257,27 @@ public class Maze {
 					}
 				}
 
-				System.out.println();
+				char[][] theRealFinalMaze = new char[verticalLength][horizontalLength];
+				System.out.println("Changing the maze:");
 				for (int y = 0; y < (verticalLength); y++) {
 					for (int x = 0; x < (horizontalLength); x++) {
 						System.out.print(finalMaze[x][y]);
+						theRealFinalMaze[y][x] = finalMaze[x][y];
+
 					}
 					System.out.println();
 				}
-				return finalMaze;
+				
+//				System.out.println();
+//				for (int y = 0; y < horizontalLength; y++) {
+//					for (int x = 0; x < (verticalLength); x++) {
+//						theRealFinalMaze[x][y] = finalMaze[y][x];
+//						System.out.print(theRealFinalMaze[x][y]);
+//					}
+//					System.out.println();
+//				}
+				
+				return theRealFinalMaze;
 			}
 	}
 
@@ -540,11 +559,14 @@ public class Maze {
 	}
 
 	public static void main(String[] args) {
-		char[][] done = Maze.create(1,3);
+		char[][] done = Maze.create(6,3);
 		
-		System.out.println("\nReturned Maze:");
-		for(int x = 0; x < horizontalLength; x++){
-			for(int y = 0 ; y < verticalLength; y++){
+		System.out.println(done.length);
+		System.out.println(done[0].length);
+		
+		System.out.println("Returned Maze:");
+		for(int x = 0; x < done.length; x++){
+			for(int y = 0 ; y < done[0].length; y++){
 				System.out.print(done[x][y]);
 			}
 			System.out.println();
