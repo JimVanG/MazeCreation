@@ -3,6 +3,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.print.attribute.standard.Finishings;
+
 /*
  * James Van Gaasbeck
  * PID: J2686979
@@ -18,209 +20,246 @@ public class Maze {
 	}
 
 	static ArrayList<Cell> cellList;
+	public static int heightOfMaze;
+	public static int horizontalLength;
+	public static int verticalLength;
 
 	public static char[][] create(int width, int height) {
+		horizontalLength = (width * 2) + 1;
+		verticalLength = (height * 2) + 1;
 
-		Random randy = new Random();
-
-		int horizontalLength = (width * 2) + 1;
-		int verticalLength = (height * 2) + 1;
-
-		Cell[][] theCells = new Cell[horizontalLength][verticalLength];
-		char[][] theMaze = new char[horizontalLength][verticalLength];
-		cellList = new ArrayList<Cell>();
-
-		int cellX = -1;
-		for (int x = 0; x < horizontalLength; x++) {
-			if (x % 2 == 1) {
-				++cellX;
-			}
-			int cellY = 0;
-			for (int y = 0; y < verticalLength; y++) {
-				// gets the outer walls of the maze
-				if (x == 0 || x == horizontalLength - 1 || y == 0
-						|| y == verticalLength - 1) {
-					theMaze[x][y] = '#';
-				} else if (x % 2 == 1 && y % 2 == 0) {
-					// top, bottom walls
-					theMaze[x][y] = '#';
-				} else if (x % 2 == 0) {
-					// left, right walls
-					theMaze[x][y] = '#';
-
+		if (width == 1 || height == 1) {//if there was an input of width or height equal to one.
+			char weirdMaze[][] = null;
+			if(width == 1 && height != 1){
+				weirdMaze = new char[3][verticalLength];
+				for(int x = 0; x < 3; x++){
+					for(int y = 0; y < verticalLength; y++){
+						if(x == 0 || y == 0 || x == (2) || y == (verticalLength - 1)){
+							weirdMaze[x][y] = '#';
+						}else if(x % 2 == 0 && y % 2 == 1){
+							weirdMaze[x][y] = ' ';
+						}else if(x % 2 == 1 && y % 2 == 1){
+							if(x == 1 && y == 1){
+								weirdMaze[x][y] = 's';
+							}else if(x == verticalLength - 2 && y == 1){
+								weirdMaze[x][y] = 'e';
+							}else{
+								weirdMaze[x][y] = ' ';
+							}
+						}
+					}
 				}
-				if (x % 2 == 1 && y % 2 == 1) {
-					// theMaze[x][y] = ' ';
-					theCells[x][y] = new Cell(new Point(cellX, cellY++), width,
-							height);
-
-				}
-			}
-		}
-
-		// print out the walls/cells, and add the cells to an array.
-		int numberOfCells = 0;
-		for (int x = 0; x < verticalLength; x++) {
-
-			for (int y = 0; y < horizontalLength; y++) {
-				System.out.print(theMaze[y][x]);
-				if (x % 2 == 1 && y % 2 == 1) {
-					// print the cell to make the maze complete
-					System.out.print(theCells[y][x].sign);
-					// add the cell to our array of cells (the array will be
-					// used for the DisjointSet)
-					cellList.add(theCells[y][x]);
-					// give the cell a number (0 to n-1)
-					cellList.get(numberOfCells).cellNumber = numberOfCells;
-					// we need to initialize the parent array(cellList), do this
-					// by setting the parent property to the current cellNumber,
-					// this is essentially the "makeSet()" function of a
-					// disjointSet
-					cellList.get(numberOfCells).parent = numberOfCells++;
-					// DisjointSet.findSet(numberOfCells++);
+						
+			}else if(width != 1 && height == 1){
+				weirdMaze = new char[horizontalLength][3];
+				for(int x = 0; x < horizontalLength; x++){
+					for(int y = 0; y < 3; y++){
+						if(x == 0 || y == 0 || x == (horizontalLength - 1) || y == (2)){
+							weirdMaze[x][y] = '#';
+						}else if(x % 2 == 0 && y % 2 == 1){
+							weirdMaze[x][y] = '#';
+						}else if(x % 2 == 1 && y % 2 == 1){
+							if(x == 1 && y == 1){
+								weirdMaze[x][y] = 's';
+							}else if(x == horizontalLength - 2 && y == 1){
+								weirdMaze[x][y] = 'e';
+							}else{
+								weirdMaze[x][y] = ' ';
+							}
+						}
+					}
 				}
 			}
-			System.out.println();
-		}
-		int randomSeed = width * height;
+			return weirdMaze;
+			
+		}else{
 
-		do {
-			int randomCellWall = randy.nextInt(randomSeed);
-			Cell cellsWallToKnockDown = cellList.remove(randomCellWall);
-			switch (cellsWallToKnockDown.type) {
-			case CENTER:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+				Random randy = new Random();
+
+				Cell[][] theCells = new Cell[horizontalLength][verticalLength];
+				char[][] theMaze = new char[horizontalLength][verticalLength];
+				cellList = new ArrayList<Cell>();
+				heightOfMaze = height;
+
+				int cellX = -1;
+				int numberOfCells = 0;
+				for (int x = 0; x < horizontalLength; x++) {
+					if (x % 2 == 1) {
+						++cellX;
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case NORTH:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+					int cellY = 0;
+					for (int y = 0; y < verticalLength; y++) {
+						// gets the outer walls of the maze
+						if (x == 0 || x == horizontalLength - 1 || y == 0
+								|| y == verticalLength - 1) {
+							theMaze[x][y] = '#';
+						} else if (x % 2 == 1 && y % 2 == 0) {
+							// top, bottom walls
+							theMaze[x][y] = '#';
+						} else if (x % 2 == 0) {
+							// left, right walls
+							theMaze[x][y] = '#';
+
+						}
+						if (x % 2 == 1 && y % 2 == 1) {
+							// theMaze[x][y] = ' ';
+							theCells[x][y] = new Cell(new Point(cellX, cellY++),
+									width, height, numberOfCells++);
+
+						}
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case NORTH_EAST:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+				}
+
+				// print out the walls/cells, and add the cells to an array.
+				for (int x = 0; x < verticalLength; x++) {
+
+					for (int y = 0; y < horizontalLength; y++) {
+						System.out.print(theMaze[y][x]);
+						if (x % 2 == 1 && y % 2 == 1) {
+							// print the cell to make the maze complete
+							System.out.print(theCells[y][x].sign);
+							// // add the cell to our array of cells (the array will
+							// be
+							// // used for the DisjointSet)
+							// cellList.add(theCells[y][x]);
+							// // give the cell a number (0 to n-1)
+							// //cellList.get(numberOfCells).cellNumber =
+							// numberOfCells;
+							// // we need to initialize the parent array(cellList),
+							// do
+							// this
+							// // by setting the parent property to the current
+							// cellNumber,
+							// // this is essentially the "makeSet()" function of a
+							// // disjointSet
+							// cellList.get(numberOfCells).parent = numberOfCells++;
+							// // DisjointSet.findSet(numberOfCells++);
+						}
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case EAST:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+					System.out.println();
+				}
+
+				numberOfCells = 0;
+				for (int x = 0; x < horizontalLength; x++) {
+					for (int y = 0; y < verticalLength; y++) {
+						if (x % 2 == 1 && y % 2 == 1) {
+							// add the cell to our array of cells (the array will be
+							// used for the DisjointSet)
+							cellList.add(theCells[x][y]);
+							// give the cell a number (0 to n-1)
+							// cellList.get(numberOfCells).cellNumber =
+							// numberOfCells;
+							// we need to initialize the parent array(cellList), do
+							// this
+							// by setting the parent property to the current
+							// cellNumber,
+							// this is essentially the "makeSet()" function of a
+							// disjointSet
+							cellList.get(numberOfCells).parent = numberOfCells++;
+							// DisjointSet.findSet(numberOfCells++);
+						}
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case SOUTH_EAST:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+				}
+
+				int randomSeed = width * height;
+				int listTicker = randomSeed - 1;
+
+				while (listTicker > 0) {
+					int randomCellWall = randy.nextInt(randomSeed);
+					Cell cellsWallToKnockDown = cellList.get(randomCellWall);
+
+					while (cellsWallToKnockDown.isDirty) {
+						randomCellWall = randy.nextInt(randomSeed);
+						cellsWallToKnockDown = cellList.get(randomCellWall);
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case SOUTH:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+					// randomSeed--;
+					listTicker--;
+					cellsWallToKnockDown.isDirty = true;
+
+					do {
+						Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
+								.removeFirst();
+						// need to fix this. The adjacent cells should be: West=
+						// cellnumber--, North=cellNumber-width? East=cellNumber++,
+						// South=cellNumber+width?
+						int currentCellX = w.adjacentCells.x;
+						int otherCellY = w.adjacentCells.y;
+						if ((DisjointSet.findSet(currentCellX).parent != DisjointSet
+								.findSet(otherCellY).parent)) {
+							DisjointSet.union(currentCellX, otherCellY);
+							w.sign = ' ';
+							switch (w.wallDirection) {
+							case EAST:
+								cellList.get(otherCellY).cellWalls.west.sign = ' ';
+								break;
+							case SOUTH:
+								cellList.get(otherCellY).cellWalls.north.sign = ' ';
+								break;
+							case WEST:
+								cellList.get(otherCellY).cellWalls.east.sign = ' ';
+								break;
+							case NORTH:
+								cellList.get(otherCellY).cellWalls.south.sign = ' ';
+								break;
+							default:
+								// shouldn't happen
+								break;
+							}
+
+							// break;
+						}
+					} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
+							.isEmpty());
+
+				} // closes outer while()
+
+				// DisjointSet.union(0, 1);
+				// DisjointSet.union(1, 2);
+				// DisjointSet.union(2, 3);
+				// DisjointSet.union(3, 4);
+				// DisjointSet.union(0, 5);
+				// DisjointSet.union(5, 6);
+				// DisjointSet.findSet(3);
+
+				int bottomWall = -1;
+				int rightWall = 0;
+				int cells = 0;
+				// trying to convert to a char[][] array...
+				char[][] finalMaze = new char[horizontalLength][verticalLength];
+				for (int x = 0; x < (horizontalLength); x++) {
+					bottomWall = cells;
+					for (int y = 0; y < (verticalLength); y++) {
+						if (x == 0 || y == 0 || x == horizontalLength - 1
+								|| y == verticalLength - 1) {
+							finalMaze[x][y] = '#';
+						} else if (x % 2 == 1) {
+							if (y % 2 == 1) {
+								finalMaze[x][y] = cellList.get(cells++).sign;
+							} else {
+								finalMaze[x][y] = cellList.get(bottomWall++).cellWalls.south.sign;
+							}
+						} else if (x % 2 == 0) {
+							if (y == 0) {
+								rightWall = cells - 1;
+							}
+							if (y % 2 == 1) {
+								finalMaze[x][y] = cellList.get(rightWall++).cellWalls.east.sign;
+							} else {
+								finalMaze[x][y] = '#';
+							}
+						}
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case SOUTH_WEST:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
+				}
+
+				System.out.println();
+				for (int y = 0; y < (verticalLength); y++) {
+					for (int x = 0; x < (horizontalLength); x++) {
+						System.out.print(finalMaze[x][y]);
 					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case WEST:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
-					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			case NORTH_WEST:
-				do {
-					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.removeFirst();
-					int rightX = w.adjacentCells.x;
-					int leftY = w.adjacentCells.y;
-					if (DisjointSet.findSet(leftY).parent != DisjointSet
-							.findSet(rightX).parent) {
-						DisjointSet.union(leftY, rightX);
-					}
-				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-						.isEmpty());
-				break;
-			default:
-				// shouldn't happen
-				break;
+					System.out.println();
+				}
+				return finalMaze;
 			}
-
-		} while (!cellList.isEmpty());
-
-		// DisjointSet.union(0, 1);
-		// DisjointSet.union(1, 2);
-		// DisjointSet.union(2, 3);
-		// DisjointSet.union(3, 4);
-		// DisjointSet.union(0, 5);
-		// DisjointSet.union(5, 6);
-		// DisjointSet.findSet(3);
-
-		return null;
 	}
 
 	public static double difficultyRating() {
@@ -255,7 +294,7 @@ public class Maze {
 
 		@Override
 		public String toString() {
-			return "" + this.sign;
+			return "" + this.wallDirection;
 		}
 
 	}
@@ -264,16 +303,26 @@ public class Maze {
 		Wall north, south, east, west;
 		ArrayDeque<Wall> listOfDestructableWalls;
 		ArrayList<Wall> walls;
+		Point eastCell, southCell, westCell, northCell;
 
-		CellWalls(Cell_Type type, Point currentCellPoint) {
+		CellWalls(Cell_Type type, int currentCellNumber) {
 			listOfDestructableWalls = new ArrayDeque<Wall>();
+			int eastPoint = (currentCellNumber + heightOfMaze);
+			int southPoint = (currentCellNumber + 1);
+			int westPoint = (currentCellNumber - heightOfMaze);
+			int northPoint = (currentCellNumber - 1);
+			this.eastCell = new Point(currentCellNumber, eastPoint);
+			this.westCell = new Point(currentCellNumber, westPoint);
+			this.northCell = new Point(currentCellNumber, northPoint);
+			this.southCell = new Point(currentCellNumber, southPoint);
 
+			// need to fix this. The adjacent cells should be: West=
+			// cellNumber--, North=cellNumber-width? East=cellNumber++,
+			// South=cellNumber+width?
 			switch (type) {
 			case NORTH_WEST:
-				east = new Wall(true, new Point(currentCellPoint.x + 1,
-						currentCellPoint.y), Cell_Type.EAST);
-				south = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y + 1), Cell_Type.SOUTH);
+				east = new Wall(true, this.eastCell, Cell_Type.EAST);
+				south = new Wall(true, this.southCell, Cell_Type.SOUTH);
 
 				north = new Wall(false);
 				west = new Wall(false);
@@ -282,12 +331,9 @@ public class Maze {
 				listOfDestructableWalls.add(south);
 				break;
 			case WEST:
-				east = new Wall(true, new Point(currentCellPoint.x + 1,
-						currentCellPoint.y), Cell_Type.EAST);
-				south = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y + 1), Cell_Type.SOUTH);
-				north = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y - 1), Cell_Type.NORTH);
+				east = new Wall(true, this.eastCell, Cell_Type.EAST);
+				south = new Wall(true, this.southCell, Cell_Type.SOUTH);
+				north = new Wall(true, this.northCell, Cell_Type.NORTH);
 
 				west = new Wall(false);
 
@@ -296,10 +342,8 @@ public class Maze {
 				listOfDestructableWalls.add(north);
 				break;
 			case SOUTH_WEST:
-				east = new Wall(true, new Point(currentCellPoint.x + 1,
-						currentCellPoint.y), Cell_Type.EAST);
-				north = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y - 1), Cell_Type.NORTH);
+				east = new Wall(true, this.eastCell, Cell_Type.EAST);
+				north = new Wall(true, this.northCell, Cell_Type.NORTH);
 
 				south = new Wall(false);
 				west = new Wall(false);
@@ -308,12 +352,9 @@ public class Maze {
 				listOfDestructableWalls.add(east);
 				break;
 			case SOUTH:
-				west = new Wall(true, new Point(currentCellPoint.x - 1,
-						currentCellPoint.y), Cell_Type.WEST);
-				east = new Wall(true, new Point(currentCellPoint.x + 1,
-						currentCellPoint.y), Cell_Type.EAST);
-				north = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y - 1), Cell_Type.NORTH);
+				west = new Wall(true, this.westCell, Cell_Type.WEST);
+				east = new Wall(true, this.eastCell, Cell_Type.EAST);
+				north = new Wall(true, this.northCell, Cell_Type.NORTH);
 
 				south = new Wall(false);
 
@@ -323,10 +364,8 @@ public class Maze {
 
 				break;
 			case SOUTH_EAST:
-				north = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y - 1), Cell_Type.NORTH);
-				west = new Wall(true, new Point(currentCellPoint.x - 1,
-						currentCellPoint.y), Cell_Type.WEST);
+				north = new Wall(true, this.northCell, Cell_Type.NORTH);
+				west = new Wall(true, this.westCell, Cell_Type.WEST);
 
 				south = new Wall(false);
 				east = new Wall(false);
@@ -335,12 +374,9 @@ public class Maze {
 				listOfDestructableWalls.add(north);
 				break;
 			case EAST:
-				north = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y - 1), Cell_Type.NORTH);
-				south = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y + 1), Cell_Type.SOUTH);
-				west = new Wall(true, new Point(currentCellPoint.x - 1,
-						currentCellPoint.y), Cell_Type.WEST);
+				north = new Wall(true, this.northCell, Cell_Type.NORTH);
+				west = new Wall(true, this.westCell, Cell_Type.WEST);
+				south = new Wall(true, this.southCell, Cell_Type.SOUTH);
 
 				east = new Wall(false);
 
@@ -349,10 +385,8 @@ public class Maze {
 				listOfDestructableWalls.add(south);
 				break;
 			case NORTH_EAST:
-				south = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y + 1), Cell_Type.SOUTH);
-				west = new Wall(true, new Point(currentCellPoint.x - 1,
-						currentCellPoint.y), Cell_Type.WEST);
+				west = new Wall(true, this.westCell, Cell_Type.WEST);
+				south = new Wall(true, this.southCell, Cell_Type.SOUTH);
 
 				north = new Wall(false);
 				east = new Wall(false);
@@ -361,12 +395,9 @@ public class Maze {
 				listOfDestructableWalls.add(west);
 				break;
 			case NORTH:
-				south = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y + 1), Cell_Type.SOUTH);
-				west = new Wall(true, new Point(currentCellPoint.x - 1,
-						currentCellPoint.y), Cell_Type.WEST);
-				east = new Wall(true, new Point(currentCellPoint.x + 1,
-						currentCellPoint.y), Cell_Type.EAST);
+				west = new Wall(true, this.westCell, Cell_Type.WEST);
+				south = new Wall(true, this.southCell, Cell_Type.SOUTH);
+				east = new Wall(true, this.eastCell, Cell_Type.EAST);
 
 				north = new Wall(false);
 
@@ -375,14 +406,10 @@ public class Maze {
 				listOfDestructableWalls.add(east);
 				break;
 			case CENTER:
-				south = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y + 1), Cell_Type.SOUTH);
-				west = new Wall(true, new Point(currentCellPoint.x - 1,
-						currentCellPoint.y), Cell_Type.WEST);
-				east = new Wall(true, new Point(currentCellPoint.x + 1,
-						currentCellPoint.y), Cell_Type.EAST);
-				north = new Wall(true, new Point(currentCellPoint.x,
-						currentCellPoint.y - 1), Cell_Type.NORTH);
+				west = new Wall(true, this.westCell, Cell_Type.WEST);
+				south = new Wall(true, this.southCell, Cell_Type.SOUTH);
+				east = new Wall(true, this.eastCell, Cell_Type.EAST);
+				north = new Wall(true, this.northCell, Cell_Type.NORTH);
 
 				listOfDestructableWalls.add(south);
 				listOfDestructableWalls.add(west);
@@ -412,56 +439,59 @@ public class Maze {
 		int cellNumber;
 		boolean isStart = false;
 		boolean isEnd = false;
+		boolean isDirty = false;
 		int parent; // the parent in the disjointSet
 		int rank = 0; // the rank of the current node/tree
 		CellWalls cellWalls;
 		Cell_Type type;
 
-		Cell(Point position, int width, int height) {
+		Cell(Point position, int width, int height, int cellNumber) {
 			this.position = position;
+			this.cellNumber = cellNumber;
 			if (this.position.x == 0 && this.position.y == 0) {
 				this.isStart = true;
 				this.sign = 's';
 				this.cellWalls = new CellWalls(Cell_Type.NORTH_WEST,
-						this.position);
+						this.cellNumber);
 				this.type = Cell_Type.NORTH_WEST;
 			} else if (this.position.x == 0) {
 				if (this.position.y == (height - 1)) {
 					this.cellWalls = new CellWalls(Cell_Type.SOUTH_WEST,
-							this.position);
+							this.cellNumber);
 					this.type = Cell_Type.SOUTH_WEST;
 				} else if (this.position.y < (height - 1)
 						&& this.position.y > 0) {
 					this.cellWalls = new CellWalls(Cell_Type.WEST,
-							this.position);
+							this.cellNumber);
 					this.type = Cell_Type.WEST;
 				}
 			} else if (this.position.x == (width - 1)) {
 				if (this.position.y == 0) {
 					this.cellWalls = new CellWalls(Cell_Type.NORTH_EAST,
-							this.position);
+							this.cellNumber);
 					this.type = Cell_Type.NORTH_EAST;
 				} else if (this.position.y == (height - 1)) {
 					this.cellWalls = new CellWalls(Cell_Type.SOUTH_EAST,
-							this.position);
+							this.cellNumber);
 					this.type = Cell_Type.SOUTH_EAST;
 					this.sign = 'e';
 					this.isEnd = true;
 				} else {
 					this.cellWalls = new CellWalls(Cell_Type.EAST,
-							this.position);
+							this.cellNumber);
 					this.type = Cell_Type.EAST;
 				}
 			} else if ((this.position.x > 0 && this.position.x < (width - 1))
 					&& this.position.y == 0) {
-				this.cellWalls = new CellWalls(Cell_Type.NORTH, this.position);
+				this.cellWalls = new CellWalls(Cell_Type.NORTH, this.cellNumber);
 				this.type = Cell_Type.NORTH;
 			} else if ((this.position.x > 0 && this.position.x < (width - 1))
 					&& this.position.y == (height - 1)) {
-				this.cellWalls = new CellWalls(Cell_Type.SOUTH, this.position);
+				this.cellWalls = new CellWalls(Cell_Type.SOUTH, this.cellNumber);
 				this.type = Cell_Type.SOUTH;
 			} else {
-				this.cellWalls = new CellWalls(Cell_Type.CENTER, this.position);
+				this.cellWalls = new CellWalls(Cell_Type.CENTER,
+						this.cellNumber);
 				this.type = Cell_Type.CENTER;
 			}
 		}
@@ -510,7 +540,15 @@ public class Maze {
 	}
 
 	public static void main(String[] args) {
-		Maze.create(6, 3);
+		char[][] done = Maze.create(1,3);
+		
+		System.out.println("\nReturned Maze:");
+		for(int x = 0; x < horizontalLength; x++){
+			for(int y = 0 ; y < verticalLength; y++){
+				System.out.print(done[x][y]);
+			}
+			System.out.println();
+		}
 
 	}
 }
