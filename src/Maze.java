@@ -1,9 +1,8 @@
 import java.awt.Point;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
-
-import javax.print.attribute.standard.Finishings;
 
 /*
  * James Van Gaasbeck
@@ -23,270 +22,226 @@ public class Maze {
 	public static int heightOfMaze;
 	public static int horizontalLength;
 	public static int verticalLength;
+	public static HashSet<Cell> setOfUnionedCells;
+	public static HashSet<Point> setOfWallsKnockedDown;
 
 	public static char[][] create(int width, int height) {
 		horizontalLength = (width * 2) + 1;
 		verticalLength = (height * 2) + 1;
 
-		if (width == 1 || height == 1) {//if there was an input of width or height equal to one.
+		if (width == 0 || height == 0) {
+			return null;
+		}
+
+		if (width == 1 || height == 1) {// if there was an input of width or
+										// height equal to one.
 			char weirdMaze[][] = null;
-			if(width == 1 && height != 1){
+			if (width == 1 && height != 1) {
 				weirdMaze = new char[verticalLength][3];
-				for(int x = 0; x < verticalLength; x++){
-					for(int y = 0; y < 3; y++){
-						if(x == 0 || y == 0 || y == (2) || x == (verticalLength - 1)){
+				for (int x = 0; x < verticalLength; x++) {
+					for (int y = 0; y < 3; y++) {
+						if (x == 0 || y == 0 || y == (2)
+								|| x == (verticalLength - 1)) {
 							weirdMaze[x][y] = '#';
-						}else if(x % 2 == 0 && y % 2 == 1){
+						} else if (x % 2 == 0 && y % 2 == 1) {
 							weirdMaze[x][y] = ' ';
-						}else if(x % 2 == 1 && y % 2 == 1){
-							if(x == 1 && y == 1){
+						} else if (x % 2 == 1 && y % 2 == 1) {
+							if (x == 1 && y == 1) {
 								weirdMaze[x][y] = 's';
-							}else if(x == verticalLength - 2 && y == 1){
+							} else if (x == verticalLength - 2 && y == 1) {
 								weirdMaze[x][y] = 'e';
-							}else{
+							} else {
 								weirdMaze[x][y] = ' ';
 							}
 						}
 					}
 				}
-						
-			}else if(width != 1 && height == 1){
+
+			} else if (width != 1 && height == 1) {
 				weirdMaze = new char[3][horizontalLength];
-				for(int x = 0; x < 3; x++){
-					for(int y = 0; y < horizontalLength; y++){
-						if(x == 0 || y == 0 || y == (horizontalLength - 1) || x == (2)){
+				for (int x = 0; x < 3; x++) {
+					for (int y = 0; y < horizontalLength; y++) {
+						if (x == 0 || y == 0 || y == (horizontalLength - 1)
+								|| x == (2)) {
 							weirdMaze[x][y] = '#';
-							System.out.print(weirdMaze[x][y]);
-						}else if(x % 2 == 1 && y % 2 == 0){
+							//System.out.print(weirdMaze[x][y]);
+						} else if (x % 2 == 1 && y % 2 == 0) {
 							weirdMaze[x][y] = ' ';
-							System.out.print(weirdMaze[x][y]);
-						}else if(x % 2 == 1 && y % 2 == 1){
-							if(x == 1 && y == 1){
+							//System.out.print(weirdMaze[x][y]);
+						} else if (x % 2 == 1 && y % 2 == 1) {
+							if (x == 1 && y == 1) {
 								weirdMaze[x][y] = 's';
-								System.out.print(weirdMaze[x][y]);
-							}else if(y == horizontalLength - 2 && x == 1){
+								//System.out.print(weirdMaze[x][y]);
+							} else if (y == horizontalLength - 2 && x == 1) {
 								weirdMaze[x][y] = 'e';
-								System.out.print(weirdMaze[x][y]);
-							}else if(x == 1){
+								//System.out.print(weirdMaze[x][y]);
+							} else if (x == 1) {
 								weirdMaze[x][y] = ' ';
-								System.out.print(weirdMaze[x][y]);
+								//System.out.print(weirdMaze[x][y]);
 							}
 						}
 					}
-					System.out.println();
+					//System.out.println();
 				}
 			}
 			return weirdMaze;
-			
-		}else{
 
-				Random randy = new Random();
+		} else {
+			Random randy = new Random();
+			setOfUnionedCells = new HashSet<Cell>();
+			Cell[][] theCells = new Cell[horizontalLength][verticalLength];
+			char[][] theMaze = new char[horizontalLength][verticalLength];
+			cellList = new ArrayList<Cell>();
+			heightOfMaze = height;
 
-				Cell[][] theCells = new Cell[horizontalLength][verticalLength];
-				char[][] theMaze = new char[horizontalLength][verticalLength];
-				cellList = new ArrayList<Cell>();
-				heightOfMaze = height;
-
-				int cellX = -1;
-				int numberOfCells = 0;
-				for (int x = 0; x < horizontalLength; x++) {
-					if (x % 2 == 1) {
-						++cellX;
+			int cellX = -1;
+			int numberOfCells = 0;
+			for (int x = 0; x < horizontalLength; x++) {
+				if (x % 2 == 1) {
+					++cellX;
+				}
+				int cellY = 0;
+				for (int y = 0; y < verticalLength; y++) {
+					// gets the outer walls of the maze
+					if (x == 0 || x == horizontalLength - 1 || y == 0
+							|| y == verticalLength - 1) {
+						theMaze[x][y] = '#';
+					} else if (x % 2 == 1 && y % 2 == 0) {
+						// top, bottom walls
+						theMaze[x][y] = '#';
+					} else if (x % 2 == 0) {
+						// left, right walls
+						theMaze[x][y] = '#';
 					}
-					int cellY = 0;
-					for (int y = 0; y < verticalLength; y++) {
-						// gets the outer walls of the maze
-						if (x == 0 || x == horizontalLength - 1 || y == 0
-								|| y == verticalLength - 1) {
-							theMaze[x][y] = '#';
-						} else if (x % 2 == 1 && y % 2 == 0) {
-							// top, bottom walls
-							theMaze[x][y] = '#';
-						} else if (x % 2 == 0) {
-							// left, right walls
-							theMaze[x][y] = '#';
-
-						}
-						if (x % 2 == 1 && y % 2 == 1) {
-							// theMaze[x][y] = ' ';
-							theCells[x][y] = new Cell(new Point(cellX, cellY++),
-									width, height, numberOfCells++);
-
-						}
+					if (x % 2 == 1 && y % 2 == 1) {
+						// theMaze[x][y] = ' ';
+						theCells[x][y] = new Cell(new Point(cellX, cellY++),
+								width, height, numberOfCells++);
 					}
 				}
-
-				// print out the walls/cells, and add the cells to an array.
-				for (int x = 0; x < verticalLength; x++) {
-
-					for (int y = 0; y < horizontalLength; y++) {
-						System.out.print(theMaze[y][x]);
-						if (x % 2 == 1 && y % 2 == 1) {
-							// print the cell to make the maze complete
-							System.out.print(theCells[y][x].sign);
-							// // add the cell to our array of cells (the array will
-							// be
-							// // used for the DisjointSet)
-							// cellList.add(theCells[y][x]);
-							// // give the cell a number (0 to n-1)
-							// //cellList.get(numberOfCells).cellNumber =
-							// numberOfCells;
-							// // we need to initialize the parent array(cellList),
-							// do
-							// this
-							// // by setting the parent property to the current
-							// cellNumber,
-							// // this is essentially the "makeSet()" function of a
-							// // disjointSet
-							// cellList.get(numberOfCells).parent = numberOfCells++;
-							// // DisjointSet.findSet(numberOfCells++);
-						}
-					}
-					System.out.println();
-				}
-
-				numberOfCells = 0;
-				for (int x = 0; x < horizontalLength; x++) {
-					for (int y = 0; y < verticalLength; y++) {
-						if (x % 2 == 1 && y % 2 == 1) {
-							// add the cell to our array of cells (the array will be
-							// used for the DisjointSet)
-							cellList.add(theCells[x][y]);
-							// give the cell a number (0 to n-1)
-							// cellList.get(numberOfCells).cellNumber =
-							// numberOfCells;
-							// we need to initialize the parent array(cellList), do
-							// this
-							// by setting the parent property to the current
-							// cellNumber,
-							// this is essentially the "makeSet()" function of a
-							// disjointSet
-							cellList.get(numberOfCells).parent = numberOfCells++;
-							// DisjointSet.findSet(numberOfCells++);
-						}
-					}
-				}
-
-				int randomSeed = width * height;
-				int listTicker = randomSeed - 1;
-
-				while (listTicker > 0) {
-					int randomCellWall = randy.nextInt(randomSeed);
-					Cell cellsWallToKnockDown = cellList.get(randomCellWall);
-
-					while (cellsWallToKnockDown.isDirty) {
-						randomCellWall = randy.nextInt(randomSeed);
-						cellsWallToKnockDown = cellList.get(randomCellWall);
-					}
-					// randomSeed--;
-					listTicker--;
-					cellsWallToKnockDown.isDirty = true;
-
-					do {
-						Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-								.removeFirst();
-						// need to fix this. The adjacent cells should be: West=
-						// cellnumber--, North=cellNumber-width? East=cellNumber++,
-						// South=cellNumber+width?
-						int currentCellX = w.adjacentCells.x;
-						int otherCellY = w.adjacentCells.y;
-						if ((DisjointSet.findSet(currentCellX).parent != DisjointSet
-								.findSet(otherCellY).parent)) {
-							DisjointSet.union(currentCellX, otherCellY);
-							w.sign = ' ';
-							switch (w.wallDirection) {
-							case EAST:
-								cellList.get(otherCellY).cellWalls.west.sign = ' ';
-								break;
-							case SOUTH:
-								cellList.get(otherCellY).cellWalls.north.sign = ' ';
-								break;
-							case WEST:
-								cellList.get(otherCellY).cellWalls.east.sign = ' ';
-								break;
-							case NORTH:
-								cellList.get(otherCellY).cellWalls.south.sign = ' ';
-								break;
-							default:
-								// shouldn't happen
-								break;
-							}
-
-							// break;
-						}
-					} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
-							.isEmpty());
-
-				} // closes outer while()
-
-				// DisjointSet.union(0, 1);
-				// DisjointSet.union(1, 2);
-				// DisjointSet.union(2, 3);
-				// DisjointSet.union(3, 4);
-				// DisjointSet.union(0, 5);
-				// DisjointSet.union(5, 6);
-				// DisjointSet.findSet(3);
-
-				int bottomWall = -1;
-				int rightWall = 0;
-				int cells = 0;
-				// trying to convert to a char[][] array...
-				char[][] finalMaze = new char[horizontalLength][verticalLength];
-				for (int x = 0; x < (horizontalLength); x++) {
-					bottomWall = cells;
-					for (int y = 0; y < (verticalLength); y++) {
-						if (x == 0 || y == 0 || x == horizontalLength - 1
-								|| y == verticalLength - 1) {
-							finalMaze[x][y] = '#';
-						} else if (x % 2 == 1) {
-							if (y % 2 == 1) {
-								finalMaze[x][y] = cellList.get(cells++).sign;
-							} else {
-								finalMaze[x][y] = cellList.get(bottomWall++).cellWalls.south.sign;
-							}
-						} else if (x % 2 == 0) {
-							if (y == 0) {
-								rightWall = cells - 1;
-							}
-							if (y % 2 == 1) {
-								finalMaze[x][y] = cellList.get(rightWall++).cellWalls.east.sign;
-							} else {
-								finalMaze[x][y] = '#';
-							}
-						}
-					}
-				}
-
-				char[][] theRealFinalMaze = new char[verticalLength][horizontalLength];
-				System.out.println("Changing the maze:");
-				for (int y = 0; y < (verticalLength); y++) {
-					for (int x = 0; x < (horizontalLength); x++) {
-						System.out.print(finalMaze[x][y]);
-						theRealFinalMaze[y][x] = finalMaze[x][y];
-
-					}
-					System.out.println();
-				}
-				
-//				System.out.println();
-//				for (int y = 0; y < horizontalLength; y++) {
-//					for (int x = 0; x < (verticalLength); x++) {
-//						theRealFinalMaze[x][y] = finalMaze[y][x];
-//						System.out.print(theRealFinalMaze[x][y]);
-//					}
-//					System.out.println();
-//				}
-				
-				return theRealFinalMaze;
 			}
+
+			numberOfCells = 0;
+			for (int x = 0; x < horizontalLength; x++) {
+				for (int y = 0; y < verticalLength; y++) {
+					if (x % 2 == 1 && y % 2 == 1) {
+						// add the cell to our array of cells (the array will be
+						// used for the DisjointSet)
+						cellList.add(theCells[x][y]);
+						cellList.get(numberOfCells).parent = numberOfCells++;
+					}
+				}
+			}
+
+			int randomSeed = width * height;
+			int listTicker = randomSeed - 1;
+
+			while (listTicker > 0) {
+				int randomCellWall = randy.nextInt(randomSeed);
+				Cell cellsWallToKnockDown = cellList.get(randomCellWall);
+
+				while (setOfUnionedCells.contains(cellsWallToKnockDown)) {
+					randomCellWall = randy.nextInt(randomSeed);
+					cellsWallToKnockDown = cellList.get(randomCellWall);
+				}
+				// randomSeed--;
+				listTicker--;
+				// cellsWallToKnockDown.isDirty = true;
+				setOfUnionedCells.add(cellsWallToKnockDown);
+
+				// for(Wall w:
+				// cellsWallToKnockDown.cellWalls.listOfDestructableWalls){
+				// if(w.sign )
+				// }
+
+				do {
+					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
+							.removeFirst();
+
+
+					int currentCellX = w.adjacentCells.x;
+					int otherCellY = w.adjacentCells.y;
+					if ((w.sign == '#')
+							&& (DisjointSet.findSet(currentCellX).parent != DisjointSet
+									.findSet(otherCellY).parent)) {
+						DisjointSet.union(currentCellX, otherCellY);
+						w.sign = ' ';
+						switch (w.wallDirection) {
+						case EAST:
+							cellList.get(otherCellY).cellWalls.west.sign = ' ';
+							break;
+						case SOUTH:
+							cellList.get(otherCellY).cellWalls.north.sign = ' ';
+							break;
+						case WEST:
+							cellList.get(otherCellY).cellWalls.east.sign = ' ';
+							break;
+						case NORTH:
+							cellList.get(otherCellY).cellWalls.south.sign = ' ';
+							break;
+						default:
+							// shouldn't happen
+							break;
+						}
+						// break;
+					}
+
+				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
+						.isEmpty());
+
+			} // closes outer while()
+
+			int bottomWall = -1;
+			int rightWall = 0;
+			int cells = 0;
+			// trying to convert to a char[][] array...
+			char[][] finalMaze = new char[horizontalLength][verticalLength];
+			for (int x = 0; x < (horizontalLength); x++) {
+				bottomWall = cells;
+				for (int y = 0; y < (verticalLength); y++) {
+					if (x == 0 || y == 0 || x == horizontalLength - 1
+							|| y == verticalLength - 1) {
+						finalMaze[x][y] = '#';
+					} else if (x % 2 == 1) {
+						if (y % 2 == 1) {
+							finalMaze[x][y] = cellList.get(cells++).sign;
+						} else {
+							finalMaze[x][y] = cellList.get(bottomWall++).cellWalls.south.sign;
+						}
+					} else if (x % 2 == 0) {
+						if (y == 0) {
+							rightWall = cells - 1;
+						}
+						if (y % 2 == 1) {
+							finalMaze[x][y] = cellList.get(rightWall++).cellWalls.east.sign;
+						} else {
+							finalMaze[x][y] = '#';
+						}
+					}
+				}
+			}
+
+			char[][] theRealFinalMaze = new char[verticalLength][horizontalLength];
+			// System.out.println("Changing the maze:");
+			for (int y = 0; y < (verticalLength); y++) {
+				for (int x = 0; x < (horizontalLength); x++) {
+					// System.out.print(finalMaze[x][y]);
+					theRealFinalMaze[y][x] = finalMaze[x][y];
+
+				}
+				// System.out.println();
+			}
+
+			return theRealFinalMaze;
+		}
 	}
 
 	public static double difficultyRating() {
-		return 3;
+		return 4.1;
 	}
 
 	public static double hoursSpent() {
-		return 5;
+		return 15;
 	}
 
 	private static class Wall {
@@ -559,18 +514,24 @@ public class Maze {
 	}
 
 	public static void main(String[] args) {
-		char[][] done = Maze.create(6,3);
-		
-		System.out.println(done.length);
-		System.out.println(done[0].length);
-		
-		System.out.println("Returned Maze:");
-		for(int x = 0; x < done.length; x++){
-			for(int y = 0 ; y < done[0].length; y++){
-				System.out.print(done[x][y]);
-			}
-			System.out.println();
-		}
 
+		long startTime = System.nanoTime();
+		char[][] done = Maze.create(6,3);
+
+		// System.out.println(done.length);
+		// System.out.println(done[0].length);
+
+		if (done != null) {
+			System.out.println("Returned Maze:");
+			for (int x = 0; x < done.length; x++) {
+				for (int y = 0; y < done[0].length; y++) {
+					System.out.print(done[x][y]);
+				}
+				System.out.println();
+			}
+			long endTime = System.nanoTime();
+			System.out.println("Took " + (endTime - startTime) + " ns");
+
+		}
 	}
 }
