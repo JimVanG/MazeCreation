@@ -33,8 +33,22 @@ public class Maze {
 			return null;
 		}
 
-		if (width == 1 || height == 1) {// if there was an input of width or
-										// height equal to one.
+		if (width == 1 && height == 1) {
+			char weirdMaze[][] = new char[3][3];
+
+			for (int x = 0; x < 3; x++) {
+				for (int y = 0; y < 3; y++) {
+					if (x == 0 || y == 0 || x == 2 || y == 2) {
+						weirdMaze[x][y] = '#';
+					} else {
+						weirdMaze[x][y] = 'e';
+					}
+				}
+			}
+			return weirdMaze;
+		} else if (width == 1 || height == 1) {// if there was an input of width
+												// or
+			// height equal to one.
 			char weirdMaze[][] = null;
 			if (width == 1 && height != 1) {
 				weirdMaze = new char[verticalLength][3];
@@ -64,24 +78,24 @@ public class Maze {
 						if (x == 0 || y == 0 || y == (horizontalLength - 1)
 								|| x == (2)) {
 							weirdMaze[x][y] = '#';
-							//System.out.print(weirdMaze[x][y]);
+							// System.out.print(weirdMaze[x][y]);
 						} else if (x % 2 == 1 && y % 2 == 0) {
 							weirdMaze[x][y] = ' ';
-							//System.out.print(weirdMaze[x][y]);
+							// System.out.print(weirdMaze[x][y]);
 						} else if (x % 2 == 1 && y % 2 == 1) {
 							if (x == 1 && y == 1) {
 								weirdMaze[x][y] = 's';
-								//System.out.print(weirdMaze[x][y]);
+								// System.out.print(weirdMaze[x][y]);
 							} else if (y == horizontalLength - 2 && x == 1) {
 								weirdMaze[x][y] = 'e';
-								//System.out.print(weirdMaze[x][y]);
+								// System.out.print(weirdMaze[x][y]);
 							} else if (x == 1) {
 								weirdMaze[x][y] = ' ';
-								//System.out.print(weirdMaze[x][y]);
+								// System.out.print(weirdMaze[x][y]);
 							}
 						}
 					}
-					//System.out.println();
+					// System.out.println();
 				}
 			}
 			return weirdMaze;
@@ -157,7 +171,6 @@ public class Maze {
 				do {
 					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
 							.removeFirst();
-
 
 					int currentCellX = w.adjacentCells.x;
 					int otherCellY = w.adjacentCells.y;
@@ -516,7 +529,7 @@ public class Maze {
 	public static void main(String[] args) {
 
 		long startTime = System.nanoTime();
-		char[][] done = Maze.create(6,3);
+		char[][] done = Maze.create(30,30);
 
 		// System.out.println(done.length);
 		// System.out.println(done[0].length);
