@@ -14,6 +14,9 @@ import java.util.Random;
  * 
  */
 public class Maze {
+
+	// enums for the type of cell or cell wall. This corrsponds to its location
+	// in the maze.
 	public enum Cell_Type {
 		NORTH_WEST, WEST, SOUTH_WEST, SOUTH, SOUTH_EAST, EAST, NORTH_EAST, NORTH, CENTER
 	}
@@ -29,10 +32,11 @@ public class Maze {
 		horizontalLength = (width * 2) + 1;
 		verticalLength = (height * 2) + 1;
 
+		// return nothing if there is a zero, because it wouldn't be a valid
+		// maze then.
 		if (width == 0 || height == 0) {
 			return null;
 		}
-
 		if (width == 1 && height == 1) {
 			char weirdMaze[][] = new char[3][3];
 
@@ -101,6 +105,10 @@ public class Maze {
 			return weirdMaze;
 
 		} else {
+			// This is really messy because of the way I started the program, I
+			// initially started off with the maze's (width and height)
+			// variables swapped, so the maze was reversed from what it should
+			// of been.
 			Random randy = new Random();
 			setOfUnionedCells = new HashSet<Cell>();
 			Cell[][] theCells = new Cell[horizontalLength][verticalLength];
@@ -108,6 +116,7 @@ public class Maze {
 			cellList = new ArrayList<Cell>();
 			heightOfMaze = height;
 
+			// fill up an array representing our cells
 			int cellX = -1;
 			int numberOfCells = 0;
 			for (int x = 0; x < horizontalLength; x++) {
@@ -135,6 +144,8 @@ public class Maze {
 				}
 			}
 
+			// fill up a list of our cells, this is used at the 'parent array'
+			// in the disjoing set.
 			numberOfCells = 0;
 			for (int x = 0; x < horizontalLength; x++) {
 				for (int y = 0; y < verticalLength; y++) {
@@ -147,18 +158,23 @@ public class Maze {
 				}
 			}
 
+			// this is where all of the logic for the maze creation algorithm
+			// is.
 			int randomSeed = width * height;
 			int listTicker = randomSeed - 1;
 
+			// keep going until we've unioned every cell
 			while (listTicker > 0) {
+				// get a random number so we can get a random cell
 				int randomCellWall = randy.nextInt(randomSeed);
 				Cell cellsWallToKnockDown = cellList.get(randomCellWall);
 
+				// keep trying to get a random cell if the cell we are grabbing
+				// has already been unioned
 				while (setOfUnionedCells.contains(cellsWallToKnockDown)) {
 					randomCellWall = randy.nextInt(randomSeed);
 					cellsWallToKnockDown = cellList.get(randomCellWall);
 				}
-				// randomSeed--;
 				listTicker--;
 				// cellsWallToKnockDown.isDirty = true;
 				setOfUnionedCells.add(cellsWallToKnockDown);
@@ -168,18 +184,36 @@ public class Maze {
 				// if(w.sign )
 				// }
 
+				// so we grabbed a cell that isn't in the same set as the rest.
+				// So that means we should check each one it's walls and
+				// adjacent cells to see if we can union them into the main set.
 				do {
+					// get a destructable wall from the cells queue of
+					// destructable walls.
 					Wall w = cellsWallToKnockDown.cellWalls.listOfDestructableWalls
 							.removeFirst();
-
+					// get the current cellsNumbers and the cells number that is
+					// adjacent to the cell we are talking about (on the other
+					// side of the wall)
 					int currentCellX = w.adjacentCells.x;
 					int otherCellY = w.adjacentCells.y;
+					// if the wall we have just grabbed has adjacent cells that
+					// are not in the main set then lets remove the wall between
+					// them (the current wall).
 					if ((w.sign == '#')
 							&& (DisjointSet.findSet(currentCellX).parent != DisjointSet
 									.findSet(otherCellY).parent)) {
+
 						DisjointSet.union(currentCellX, otherCellY);
+						// remove the wall
 						w.sign = ' ';
+						// because of the way I set up the program we need to
+						// not only remove the wall from current cell we are
+						// dealing with, we need to remove wall from the
+						// 'otherCell' (the adjacent cell) to make things work.
 						switch (w.wallDirection) {
+						// if we just removed the current cells east wall, we
+						// need to remove the otherCells west wall.
 						case EAST:
 							cellList.get(otherCellY).cellWalls.west.sign = ' ';
 							break;
@@ -196,14 +230,20 @@ public class Maze {
 							// shouldn't happen
 							break;
 						}
-						// break;
+						// setOfUnionedCells.add(cellList.get(otherCellY));
 					}
 
+					// keep grabbing and destroying the walls while the list
+					// isn't empty.
 				} while (!cellsWallToKnockDown.cellWalls.listOfDestructableWalls
 						.isEmpty());
 
 			} // closes outer while()
 
+			// now i need to convert the ArrayList of cells into a 2D array of
+			// chars.. I'm not even going to go into the logic to transfer a
+			// arraylist into a 2D array of chars...it took a lot of trial and
+			// error.
 			int bottomWall = -1;
 			int rightWall = 0;
 			int cells = 0;
@@ -233,35 +273,44 @@ public class Maze {
 					}
 				}
 			}
-
+			// whoops! i started out wrong and made the initial arrays [rows]
+			// and [columns] swapped! That means we have to switch the rows and
+			// columns in the current char[][] array to make it work. Because if
+			// i were to keep it the way it is everything would be backwards and
+			// switch, everything would still be a valid maze, but everything
+			// would be backwards and wrong i guess.
 			char[][] theRealFinalMaze = new char[verticalLength][horizontalLength];
 			// System.out.println("Changing the maze:");
 			for (int y = 0; y < (verticalLength); y++) {
 				for (int x = 0; x < (horizontalLength); x++) {
 					// System.out.print(finalMaze[x][y]);
 					theRealFinalMaze[y][x] = finalMaze[x][y];
-
 				}
 				// System.out.println();
 			}
-
+			// return the REAL correct maze...
 			return theRealFinalMaze;
 		}
 	}
 
 	public static double difficultyRating() {
+		// this was hard and annoying
 		return 4.1;
 	}
 
 	public static double hoursSpent() {
+		// put way too much time into this.
 		return 15;
 	}
 
+	// class to represent a wall
 	private static class Wall {
 
+		// will either be a '#' or a ' '
 		char sign;
 		boolean isDestructable = false;
-		// point to represent the adjacent cells, (left, right) or (top, bottom)
+		// point to represent the adjacent cells.
+		// x == currentCell, y == theAdjacentCell
 		Point adjacentCells;
 		Cell_Type wallDirection;
 
@@ -286,7 +335,10 @@ public class Maze {
 
 	}
 
+	// class to represent the walls around the cell.
 	private static class CellWalls {
+		// every cell has four walls, BUT not all of them may be necessarily
+		// destructable.
 		Wall north, south, east, west;
 		ArrayDeque<Wall> listOfDestructableWalls;
 		ArrayList<Wall> walls;
@@ -294,6 +346,8 @@ public class Maze {
 
 		CellWalls(Cell_Type type, int currentCellNumber) {
 			listOfDestructableWalls = new ArrayDeque<Wall>();
+			// logic to find the adjacentCell depending on the type of cell we
+			// are dealing with.
 			int eastPoint = (currentCellNumber + heightOfMaze);
 			int southPoint = (currentCellNumber + 1);
 			int westPoint = (currentCellNumber - heightOfMaze);
@@ -303,9 +357,8 @@ public class Maze {
 			this.northCell = new Point(currentCellNumber, northPoint);
 			this.southCell = new Point(currentCellNumber, southPoint);
 
-			// need to fix this. The adjacent cells should be: West=
-			// cellNumber--, North=cellNumber-width? East=cellNumber++,
-			// South=cellNumber+width?
+			// this assigns the adjacent cell to the current cell depending on
+			// the type of cell we are dealing with and the type of wall.
 			switch (type) {
 			case NORTH_WEST:
 				east = new Wall(true, this.eastCell, Cell_Type.EAST);
@@ -404,7 +457,7 @@ public class Maze {
 				listOfDestructableWalls.add(north);
 				break;
 			default:
-
+				// wont happen
 				break;
 			}
 		}
@@ -419,6 +472,7 @@ public class Maze {
 		}
 	}
 
+	// class to represent a cell
 	private static class Cell {
 
 		char sign = ' ';
@@ -432,6 +486,8 @@ public class Maze {
 		CellWalls cellWalls;
 		Cell_Type type;
 
+		// gives the cell a specific type depending on the position of the cell
+		// in the maze.
 		Cell(Point position, int width, int height, int cellNumber) {
 			this.position = position;
 			this.cellNumber = cellNumber;
@@ -489,6 +545,7 @@ public class Maze {
 		}
 	}
 
+	// disjoint set class that has all those disjoint set methods
 	private static class DisjointSet {
 
 		// no makeSet() function because i make the set independent of the
@@ -526,25 +583,15 @@ public class Maze {
 
 	}
 
-	public static void main(String[] args) {
-
-		long startTime = System.nanoTime();
-		char[][] done = Maze.create(30,30);
-
-		// System.out.println(done.length);
-		// System.out.println(done[0].length);
-
-		if (done != null) {
-			System.out.println("Returned Maze:");
-			for (int x = 0; x < done.length; x++) {
-				for (int y = 0; y < done[0].length; y++) {
-					System.out.print(done[x][y]);
-				}
-				System.out.println();
-			}
-			long endTime = System.nanoTime();
-			System.out.println("Took " + (endTime - startTime) + " ns");
-
+	// A method for printing mazes.
+	public static void printMaze(char[][] maze) {
+		for (int i = 0; i < maze.length; i++) {
+			for (int j = 0; j < maze[i].length; j++)
+				System.out.print(maze[i][j]);
+			System.out.println();
 		}
+
+		System.out.println();
 	}
+
 }
